@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FileSpreadsheet, Building2, Ruler, TrendingUp, Calculator, AlertCircle, CheckCircle, Info, ChevronRight, ChevronLeft, MapPin, Home, Search, Map, Share2, TreeDeciduous, CheckSquare, Square, Copy, Tractor, Sun, CloudSun, Compass } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { FileSpreadsheet, Building2, Ruler, TrendingUp, Calculator, AlertCircle, CheckCircle, Info, ChevronRight, ChevronLeft, MapPin, Home, Search, Map, Share2, TreeDeciduous, CheckSquare, Square, Copy, Tractor, Sun, CloudSun, LucideIcon } from 'lucide-react';
 
 // --- ESTILOS E FONTES ---
 const FontStyles = () => (
@@ -8,13 +8,11 @@ const FontStyles = () => (
     
     body { font-family: 'Montserrat', sans-serif; }
     
-    /* SLIDERS PERSONALIZADOS (Mais gordinhos) */
     input[type=range] {
-      height: 12px; /* Trilho mais alto */
+      height: 12px;
       border-radius: 999px;
     }
     
-    /* Thumb (Bolinha) Webkit */
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
       height: 28px;
@@ -23,7 +21,7 @@ const FontStyles = () => (
       background: #2563eb;
       border: 3px solid white;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-      margin-top: -2px; /* Ajuste fino vertical se necessário, mas geralmente automático no flex */
+      margin-top: -2px;
       cursor: pointer;
       transition: transform 0.1s;
     }
@@ -32,7 +30,6 @@ const FontStyles = () => (
       background: #1d4ed8;
     }
 
-    /* Thumb Firefox */
     input[type=range]::-moz-range-thumb {
       height: 28px;
       width: 28px;
@@ -43,33 +40,76 @@ const FontStyles = () => (
       cursor: pointer;
     }
 
-    /* Cores do trilho baseadas no React state inline, mas classes auxiliares aqui se precisar */
-    .range-track-bg { background-color: #e2e8f0; }
-    
-    /* Hide scrollbar for clean UI */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   `}</style>
 );
 
+// --- TIPAGEM ---
+interface ImovelState {
+  endereco: string;
+  bairro: string;
+  tipo: string;
+  areaTotal: string;
+  areaConstruida: string;
+  ano: string;
+  valorPedido: string;
+  isRural: boolean;
+  orientacao: 'Nascente' | 'Poente';
+  formatoTerreno: 'Regular' | 'Irregular';
+  frente: string;
+  lateral: string;
+  fundo: string;
+  latDir: string;
+  latEsq: string;
+}
+
+interface MarketDataState {
+  precoMedioM2: string;
+  fatorAjusteMax: number;
+}
+
+// Assinatura de índice para permitir acesso dinâmico (ex: scores['localizacao'])
+interface CategoryScores {
+  [key: string]: number;
+}
+
+interface ScoresState {
+  localizacao: CategoryScores;
+  terreno: CategoryScores;
+  construcao: CategoryScores;
+  vizinhanca: CategoryScores;
+  potencial: CategoryScores;
+  [key: string]: CategoryScores; 
+}
+
+interface AgeLabel {
+  text: string;
+  color: string;
+}
+
+interface Descriptions {
+  [key: string]: {
+    [key: string]: string;
+  };
+}
+
 // --- UTILITÁRIOS ---
-const parseCurrency = (value) => {
+const parseCurrency = (value: string | number): number => {
   if (!value) return 0;
-  // Remove pontos de milhar e troca vírgula decimal por ponto
   return Number(value.toString().replace(/\./g, "").replace(",", ".")) || 0;
 };
 
-const formatNumber = (value) => {
+const formatNumber = (value: number | string): string => {
   if (!value && value !== 0) return "";
   return Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
-const roundToEven = (num) => {
+const roundToEven = (num: number): number => {
   const integerPart = Math.round(num);
   return 2 * Math.round(integerPart / 2);
 };
 
-// Lista de POIs (Checklist)
 const POI_LIST = [
   "Escolas / Colégios", "Universidades", "Hospitais / Clínicas", "Farmácias",
   "Supermercados", "Padarias", "Restaurantes / Bares", "Shopping Center",
@@ -77,7 +117,7 @@ const POI_LIST = [
   "Posto de Combustível", "Delegacia / Segurança", "Vias de Acesso Rápido"
 ];
 
-const descriptions = {
+const descriptions: Descriptions = {
   localizacao: {
     regiao: "Valorização imobiliária do bairro e procura atual.",
     relevo: "Topografia. Plano (10) vs Aclive/Declive acentuado (0).",
@@ -117,26 +157,36 @@ const descriptions = {
 
 // --- COMPONENTES UI ---
 
-const Card = ({ children, className = "" }) => (
+const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
   <div className={`bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden ${className}`}>
     {children}
   </div>
 );
 
-const SectionTitle = ({ children, icon: Icon }) => (
+const SectionTitle = ({ children, icon: Icon }: { children: React.ReactNode; icon?: LucideIcon }) => (
   <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-4 pb-2 border-b border-slate-100 uppercase tracking-wide">
     {Icon && <Icon size={18} className="text-blue-600" />}
     {children}
   </h3>
 );
 
-// Input com formatação automática de números/moeda
-const FormattedInput = ({ label, value, onChange, type = "text", placeholder = "", prefix = "", isCurrency = false, isNumber = false, disabled = false }) => {
-  const handleChange = (e) => {
+interface FormattedInputProps {
+  label: string;
+  value: string | number;
+  onChange: (val: string) => void;
+  type?: string;
+  placeholder?: string;
+  prefix?: string;
+  isCurrency?: boolean;
+  isNumber?: boolean;
+  disabled?: boolean;
+}
+
+const FormattedInput = ({ label, value, onChange, type = "text", placeholder = "", prefix = "", isCurrency = false, isNumber = false, disabled = false }: FormattedInputProps) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let rawVal = e.target.value;
     
     if (isCurrency || isNumber) {
-      // Remove tudo que não é dígito
       const numericVal = rawVal.replace(/\D/g, "");
       
       if (numericVal === "") {
@@ -144,9 +194,7 @@ const FormattedInput = ({ label, value, onChange, type = "text", placeholder = "
         return;
       }
 
-      // Converte para decimal (assumindo 2 casas)
       const number = Number(numericVal) / 100;
-      
       const formatted = number.toLocaleString("pt-BR", { 
         minimumFractionDigits: 2, 
         maximumFractionDigits: 2 
@@ -186,7 +234,15 @@ const FormattedInput = ({ label, value, onChange, type = "text", placeholder = "
   );
 };
 
-const RangeInput = ({ label, value, onChange, touched, description }) => {
+interface RangeInputProps {
+  label: string;
+  value: number;
+  onChange: (val: number) => void;
+  touched: boolean;
+  description: string;
+}
+
+const RangeInput = ({ label, value, onChange, touched, description }: RangeInputProps) => {
   const [showInfo, setShowInfo] = useState(false);
   const displayValue = touched ? value : 5;
   
@@ -241,7 +297,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('dados');
   
   // --- ESTADO GERAL ---
-  const [imovel, setImovel] = useState({
+  const [imovel, setImovel] = useState<ImovelState>({
     endereco: '',
     bairro: '',
     tipo: 'Apartamento',
@@ -250,25 +306,24 @@ export default function App() {
     ano: '',
     valorPedido: '',
     isRural: false,
-    orientacao: 'Nascente', // Nascente ou Poente
-    formatoTerreno: 'Regular', // Regular ou Irregular
-    // Dimensões
+    orientacao: 'Nascente',
+    formatoTerreno: 'Regular',
     frente: '',
-    lateral: '', // Usado para Regular
-    fundo: '', // Usado para Irregular
-    latDir: '', // Usado para Irregular
-    latEsq: ''  // Usado para Irregular
+    lateral: '',
+    fundo: '',
+    latDir: '',
+    latEsq: ''
   });
 
-  const [marketData, setMarketData] = useState({
+  const [marketData, setMarketData] = useState<MarketDataState>({
     precoMedioM2: '',
     fatorAjusteMax: 20
   });
 
-  const [touchedItems, setTouchedItems] = useState(new Set());
-  const [selectedPOIs, setSelectedPOIs] = useState(new Set());
+  const [touchedItems, setTouchedItems] = useState<Set<string>>(new Set());
+  const [selectedPOIs, setSelectedPOIs] = useState<Set<string>>(new Set());
   
-  const [scores, setScores] = useState({
+  const [scores, setScores] = useState<ScoresState>({
     localizacao: { regiao: 5, relevo: 5, acesso: 5, infra: 5, servicos: 5 },
     terreno: { extensao: 5, formato: 5, benfeitorias: 5, ventilacao: 5, ampliacao: 5 },
     construcao: { conservacao: 5, padrao: 5, distribuicao: 5, conforto: 5, idade: 5 },
@@ -278,7 +333,7 @@ export default function App() {
 
   // --- LÓGICA DO ANO/IDADE ---
   const currentYear = new Date().getFullYear();
-  const getImovelAgeLabel = () => {
+  const getImovelAgeLabel = (): AgeLabel | null => {
     if (imovel.tipo === 'Terreno') return null;
     if (!imovel.ano) return null;
     const ano = parseInt(imovel.ano);
@@ -297,7 +352,6 @@ export default function App() {
       let areaCalculada = 0;
       
       if (imovel.formatoTerreno === 'Regular') {
-        // Frente x Lateral
         const f = parseCurrency(imovel.frente);
         const l = parseCurrency(imovel.lateral);
         if (f > 0 && l > 0) {
@@ -305,7 +359,6 @@ export default function App() {
           setImovel(prev => ({ ...prev, areaTotal: formatNumber(areaCalculada) }));
         }
       } else {
-        // Irregular: Média das larguras x Média das laterais (Estimativa Simples)
         const f = parseCurrency(imovel.frente);
         const fd = parseCurrency(imovel.fundo);
         const le = parseCurrency(imovel.latEsq);
@@ -345,20 +398,20 @@ export default function App() {
     }
   };
 
-  const togglePOI = (poi) => {
+  const togglePOI = (poi: string) => {
     const newSet = new Set(selectedPOIs);
     if (newSet.has(poi)) newSet.delete(poi);
     else newSet.add(poi);
     setSelectedPOIs(newSet);
   };
 
-  const updateScore = (category, item, val) => {
+  const updateScore = (category: string, item: string, val: number) => {
     setScores(prev => ({ ...prev, [category]: { ...prev[category], [item]: val } }));
     setTouchedItems(prev => new Set(prev).add(`${category}.${item}`));
   };
 
   // --- CÁLCULOS FINAIS ---
-  const calculateCategoryScore = (categoryKey) => {
+  const calculateCategoryScore = (categoryKey: string) => {
     const categoryScores = scores[categoryKey];
     let sum = 0;
     let count = 0;
@@ -381,7 +434,7 @@ export default function App() {
 
   const finalScore = results.loc + results.ter + results.cons + results.viz + results.pot;
 
-  const getClassification = (score) => {
+  const getClassification = (score: number) => {
     if (score === 0 && touchedItems.size === 0) return { label: "Aguardando Avaliação", color: "text-slate-400", bg: "bg-slate-50" };
     if (score >= 90) return { label: "Imóvel Premium", color: "text-emerald-700", bg: "bg-emerald-50" };
     if (score >= 75) return { label: "Ótima Oportunidade", color: "text-blue-700", bg: "bg-blue-50" };
@@ -393,8 +446,8 @@ export default function App() {
   
   // Relatório Sort
   const getAllCriteria = () => {
-    let all = [];
-    const labels = {
+    let all: { label: string; val: number }[] = [];
+    const labels: Record<string, string> = {
       regiao: 'Região', relevo: 'Relevo', acesso: 'Acesso', infra: 'Infraestrutura', servicos: 'Serviços',
       extensao: 'Extensão', formato: 'Formato', benfeitorias: 'Benfeitorias', ventilacao: 'Ventilação', ampliacao: 'Ampliação',
       conservacao: 'Conservação', padrao: 'Padrão', distribuicao: 'Planta', conforto: 'Conforto', idade: 'Idade',
@@ -422,9 +475,7 @@ export default function App() {
   
   let valorSugeridoRaw = valorBase * (1 + percentualAjuste);
   
-  // Fator Rural (-5%)
   if (imovel.isRural) valorSugeridoRaw = valorSugeridoRaw * 0.95;
-  // Fator Nascente (+5%) - Valorização por conforto térmico
   if (imovel.orientacao === 'Nascente') valorSugeridoRaw = valorSugeridoRaw * 1.05;
 
   const valorSugerido = roundToEven(valorSugeridoRaw);
@@ -605,12 +656,11 @@ export default function App() {
             <Card className="p-5 border-l-4 border-l-slate-400">
               <SectionTitle icon={Ruler}>Dimensões do Imóvel</SectionTitle>
               
-              {/* Seletor Regular/Irregular */}
               <div className="flex bg-slate-100 p-1 rounded-xl mb-4">
                 {['Regular', 'Irregular'].map(tipo => (
                   <button
                     key={tipo}
-                    onClick={() => setImovel(prev => ({ ...prev, formatoTerreno: tipo }))}
+                    onClick={() => setImovel(prev => ({ ...prev, formatoTerreno: tipo as 'Regular' | 'Irregular' }))}
                     className={`flex-1 py-2 text-xs font-bold uppercase rounded-lg transition-all ${imovel.formatoTerreno === tipo ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'}`}
                   >
                     {tipo}
@@ -618,7 +668,6 @@ export default function App() {
                 ))}
               </div>
 
-              {/* Inputs de Área Dinâmicos */}
               {imovel.formatoTerreno === 'Regular' ? (
                  <div className="grid grid-cols-2 gap-4">
                    <FormattedInput label="Frente (m)" value={imovel.frente} onChange={(v) => setImovel({ ...imovel, frente: v })} isNumber={true} />
@@ -633,7 +682,6 @@ export default function App() {
                  </div>
               )}
 
-              {/* Resultados de Área */}
               <div className="grid grid-cols-2 gap-4 mt-2">
                 <FormattedInput label="Área Total Calculada" value={imovel.areaTotal} onChange={(v) => setImovel({ ...imovel, areaTotal: v })} prefix="m²" isNumber={true} />
                 <FormattedInput 
@@ -705,7 +753,7 @@ export default function App() {
           </div>
         )}
 
-        {/* --- DEMAIS ABAS MANTIDAS IGUAIS, COM OS MESMOS COMPONENTES VISUAIS APRIMORADOS --- */}
+        {/* --- DEMAIS ABAS --- */}
         {activeTab === 'tecnica' && (
           <div className="space-y-6">
             <div className="text-center text-slate-400 mb-2">
@@ -856,7 +904,7 @@ export default function App() {
                   min="5" 
                   max="50" 
                   value={marketData.fatorAjusteMax}
-                  onChange={(e) => setMarketData({...marketData, fatorAjusteMax: e.target.value})}
+                  onChange={(e) => setMarketData({...marketData, fatorAjusteMax: parseFloat(e.target.value)})}
                   className="w-full h-2 bg-slate-200 rounded-full accent-slate-600 cursor-pointer"
                 />
                 <div className="flex justify-between text-[9px] text-slate-400 mt-2 uppercase font-bold">

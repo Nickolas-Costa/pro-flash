@@ -208,7 +208,7 @@ const FormattedInput = ({ label, value, onChange, type = "text", placeholder = "
 
   return (
     <div className="mb-4">
-      <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">{label}</label>
+      <label className="block text-sm font-bold text-slate-500 uppercase mb-1.5 ml-1">{label}</label>
       <div className="relative flex items-center">
         {prefix && (
           <div className={`absolute left-3 top-1/2 -translate-y-1/2 font-bold text-sm pointer-events-none z-10 ${disabled ? 'text-slate-300' : 'text-slate-400'}`}>
@@ -542,7 +542,7 @@ export default function App() {
               <FileSpreadsheet className="text-blue-500" size={32} />
               PRO <span className="text-blue-500">{'>'}</span> FLASH
             </h1>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-2">Ferramenta Técnica e Estratégica</p>
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-[0.2em] mt-2">Ferramenta Técnica e Estratégica</p>
         </div>
 
         <div className="bg-white rounded-2xl p-4 text-slate-900 shadow-2xl shadow-black/50 transform translate-y-4 max-w-sm mx-auto border-2 border-slate-100">
@@ -568,7 +568,7 @@ export default function App() {
 
       {/* ABAS CENTRALIZADAS */}
       <div className="mt-12 w-full flex justify-center">
-        <div className="w-full max-w-4xl px-4">
+        <div className="w-full max-w-7xl px-4">
           <div className="flex justify-center flex-wrap gap-2 md:grid md:grid-cols-5 md:gap-4">
             {[
               { id: 'dados', label: 'DADOS', icon: Home },
@@ -586,14 +586,14 @@ export default function App() {
                     : 'bg-white text-slate-400 border border-slate-100 font-medium hover:bg-slate-50 hover:text-slate-600'}`}
               >
                 <tab.icon size={22} className="mb-1.5 md:mb-2" />
-                <span className="text-[10px] md:text-xs tracking-wide">{tab.label}</span>
+                <span className="text-xs md:text-sm tracking-wide">{tab.label}</span>
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      <main className="px-6 mt-6 md:max-w-4xl md:mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <main className="px-6 mt-6 max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
         
         {activeTab === 'dados' && (
           <div className="space-y-5">
@@ -603,7 +603,7 @@ export default function App() {
               <div className="grid grid-cols-2 gap-4">
                 <FormattedInput label="Bairro" value={imovel.bairro} onChange={(v) => setImovel({ ...imovel, bairro: v })} placeholder="Bairro" />
                 <div className="mb-4">
-                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Tipo</label>
+                    <label className="block text-sm font-bold text-slate-500 uppercase mb-1.5 ml-1">Tipo</label>
                     <div className="relative">
                         <select 
                             value={imovel.tipo} 
@@ -927,7 +927,8 @@ export default function App() {
       </main>
 
       {/* FOOTER NAV (MOBILE) */}
-      <div className="fixed bottom-8 left-0 w-full px-8 flex justify-between items-center pointer-events-none z-40 md:justify-center md:gap-8">
+      {/* FOOTER NAV */}
+      <div className="fixed bottom-8 left-0 w-full px-8 flex justify-between items-center pointer-events-none z-40 md:static md:w-full md:px-6 md:mt-12 md:mb-12 md:pointer-events-auto md:justify-center md:gap-8">
         <button 
           onClick={handlePrev}
           disabled={activeTab === 'dados'}

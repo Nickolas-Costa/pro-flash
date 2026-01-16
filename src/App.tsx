@@ -539,7 +539,7 @@ export default function App() {
       <header className="bg-slate-900 pt-8 pb-8 px-6 shadow-xl rounded-b-[2.5rem] sticky top-0 z-30 border-b-4 border-slate-800">
         <div className="flex flex-col items-center justify-center text-center mb-6">
            <h1 className="flex items-center justify-center">
-              <img src="/Pro-Flash_Logo.svg" alt="Pro Flash Imob" className="h-20 md:h-24" />
+              <img src="/Pro-Flash_Logo.png" alt="Pro Flash Imob" className="h-20 md:h-24" />
             </h1>
             <p className="text-xs text-slate-400 font-bold uppercase tracking-[0.2em] mt-2">Ferramenta Técnica e Estratégica</p>
         </div>

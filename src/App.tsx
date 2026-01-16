@@ -184,7 +184,7 @@ interface FormattedInputProps {
 
 const FormattedInput = ({ label, value, onChange, type = "text", placeholder = "", prefix = "", isCurrency = false, isNumber = false, disabled = false }: FormattedInputProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let rawVal = e.target.value;
+    const rawVal = e.target.value;
     
     if (isCurrency || isNumber) {
       const numericVal = rawVal.replace(/\D/g, "");
@@ -446,7 +446,7 @@ export default function App() {
   
   // Relatório Sort
   const getAllCriteria = () => {
-    let all: { label: string; val: number }[] = [];
+    const all: { label: string; val: number }[] = [];
     const labels: Record<string, string> = {
       regiao: 'Região', relevo: 'Relevo', acesso: 'Acesso', infra: 'Infraestrutura', servicos: 'Serviços',
       extensao: 'Extensão', formato: 'Formato', benfeitorias: 'Benfeitorias', ventilacao: 'Ventilação', ampliacao: 'Ampliação',
@@ -505,7 +505,7 @@ export default function App() {
         document.execCommand('copy');
         document.body.removeChild(textArea);
         alert("Copiado com sucesso!");
-    } catch (e) {
+    } catch {
         alert("Erro ao copiar.");
     }
   };
